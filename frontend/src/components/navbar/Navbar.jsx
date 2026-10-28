@@ -1,18 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GraduationCap, ChevronDown, Search, Bell, LogOut, Settings } from 'lucide-react';
+import { GraduationCap, ChevronDown, Search, Bell, LogOut, Settings, ShieldCheck } from 'lucide-react';
 import FeaturesDropdown from './FeaturesDropdown';
 import NotificationsDropdown from './NotificationsDropdown';
 import { useAuth } from '../../context/AuthContext';
 import { useAppData } from '../../context/AppDataContext';
 import { getFirstName } from '../../utils/format';
+import { getAdminSession } from '../../services/adminApi';
 import '../../styles/navbar/Navbar.css';
 
-export default function Navbar({ onOpenAuthModal, onOpenSettings }) {
+export default function Navbar({ onOpenAuthModal, onOpenSettings, onNavigateToAdmin }) {
   const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);
   const { isLoggedIn, user, logout } = useAuth();
   const { notifications, unreadCount, markNotificationRead, markAllNotificationsRead } = useAppData();
+
+  const [hasAdminSession, setHasAdminSession] = useState(false);
+
+  useEffect(() => {
+    const admin = getAdminSession();
+    setHasAdminSession(Boolean(admin) || user?.role === 'admin');
+  }, [user]);
 
   const firstName = getFirstName(user?.name || 'User');
   const initial = firstName.charAt(0).toUpperCase();
@@ -35,6 +43,18 @@ export default function Navbar({ onOpenAuthModal, onOpenSettings }) {
     }
     if (typeof onOpenAuthModal === 'function') {
       onOpenAuthModal();
+    }
+  };
+
+  const handleAdminClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (typeof onNavigateToAdmin === 'function') {
+      onNavigateToAdmin();
+    } else {
+      window.location.hash = '#admin';
     }
   };
 
@@ -78,6 +98,7 @@ export default function Navbar({ onOpenAuthModal, onOpenSettings }) {
               <FeaturesDropdown
                 isLoggedIn={isLoggedIn}
                 onSelectFeature={isLoggedIn ? () => setIsFeaturesOpen(false) : handleAuthTrigger}
+                onNavigateToAdmin={handleAdminClick}
               />
             )}
           </div>
@@ -86,6 +107,19 @@ export default function Navbar({ onOpenAuthModal, onOpenSettings }) {
         {/* Right Side */}
         {isLoggedIn ? (
           <div className="navbar-right-actions">
+
+            {/* Admin Panel button if user is admin or admin session active */}
+            {hasAdminSession && (
+              <button
+                type="button"
+                className="admin-nav-chip"
+                onClick={handleAdminClick}
+                title="Open IIUC ThesisVerse Admin Control Panel"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Admin Panel</span>
+              </button>
+            )}
 
             {/* Notifications */}
             <div className="notif-wrapper" ref={notifRef}>
@@ -163,13 +197,24 @@ export default function Navbar({ onOpenAuthModal, onOpenSettings }) {
 
             {/* Notification Bell Icon */}
             <button 
-              type="button"
+              type="button" 
               className="icon-action-btn"
               onClick={handleAuthTrigger}
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-slate-700" />
               <span className="notification-dot"></span>
+            </button>
+
+            {/* Direct Admin Access Button */}
+            <button
+              type="button"
+              className="admin-nav-chip"
+              onClick={handleAdminClick}
+              title="Access IIUC ThesisVerse Admin Control Panel"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Admin</span>
             </button>
 
             {/* Student Login / Register CTA Button */}

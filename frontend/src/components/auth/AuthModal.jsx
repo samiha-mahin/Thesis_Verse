@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, GraduationCap, UserRound } from 'lucide-react';
+import { X, Lock, GraduationCap, UserRound, ShieldCheck } from 'lucide-react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { useAuth } from '../../context/AuthContext';
+import { adminLogin } from '../../services/adminApi';
 import '../../styles/auth/AuthModal.css';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
@@ -27,11 +28,28 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
 
   const switchRole = (nextRole) => {
     setRole(nextRole);
+    if (nextRole === 'admin') {
+      setAuthMode('login');
+    }
     setError('');
   };
 
   const handleLogin = async (values) => {
     setError('');
+
+    if (role === 'admin') {
+      const res = await adminLogin(values.identifier, values.password);
+      if (!res.ok) {
+        setError(res.error || 'Invalid admin credentials');
+        return;
+      }
+      setError('');
+      window.location.hash = '#admin';
+      if (onLoginSuccess) onLoginSuccess(res.admin);
+      if (onClose) onClose();
+      return;
+    }
+
     const result = await login({ ...values, role });
     if (!result.ok) {
       setError(result.error);
@@ -39,6 +57,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     }
     setError('');
     if (onLoginSuccess) onLoginSuccess(result.user);
+    if (onClose) onClose();
   };
 
   const handleRegister = async (values) => {
@@ -50,6 +69,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     }
     setError('');
     if (onLoginSuccess) onLoginSuccess(result.user);
+    if (onClose) onClose();
   };
 
   return (
@@ -59,12 +79,20 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         <div className="auth-modal-header">
           <div className="auth-header-brand">
             <div className="auth-logo-circle">
-              <GraduationCap className="w-5 h-5 text-white" />
+              {role === 'admin' ? (
+                <ShieldCheck className="w-5 h-5 text-white" />
+              ) : (
+                <GraduationCap className="w-5 h-5 text-white" />
+              )}
             </div>
             <div>
-              <h3 className="auth-header-title">IIUC ThesisVerse Authentication</h3>
+              <h3 className="auth-header-title">
+                {role === 'admin' ? 'IIUC Admin Control Panel' : 'IIUC ThesisVerse Authentication'}
+              </h3>
               <p className="auth-header-subtitle">
-                Unlock supervisor contacts, supervision requests, downloads &amp; AI assistant
+                {role === 'admin'
+                  ? 'Sign in to access department oversight, user database & guidelines'
+                  : 'Unlock supervisor contacts, supervision requests, downloads & AI assistant'}
               </p>
             </div>
           </div>
@@ -74,6 +102,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
           </button>
         </div>
 
+        {/* 3-Way Role Switcher: Student | Supervisor | Admin */}
         <div className="auth-role-switch">
           <button
             type="button"
@@ -91,24 +120,35 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             <UserRound className="w-4 h-4" />
             <span>Supervisor</span>
           </button>
+          <button
+            type="button"
+            className={`auth-role-btn ${role === 'admin' ? 'active' : ''}`}
+            onClick={() => switchRole('admin')}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Admin</span>
+          </button>
         </div>
 
-        <div className="auth-tabs-wrapper">
-          <button
-            type="button"
-            className={`auth-tab-btn ${authMode === 'login' ? 'active' : ''}`}
-            onClick={() => switchMode('login')}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className={`auth-tab-btn ${authMode === 'register' ? 'active' : ''}`}
-            onClick={() => switchMode('register')}
-          >
-            New Registration
-          </button>
-        </div>
+        {/* Mode Tabs (hidden for Admin since Admin accounts are institutional) */}
+        {role !== 'admin' && (
+          <div className="auth-tabs-wrapper">
+            <button
+              type="button"
+              className={`auth-tab-btn ${authMode === 'login' ? 'active' : ''}`}
+              onClick={() => switchMode('login')}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              className={`auth-tab-btn ${authMode === 'register' ? 'active' : ''}`}
+              onClick={() => switchMode('register')}
+            >
+              New Registration
+            </button>
+          </div>
+        )}
 
         <div className="auth-modal-body">
           {authMode === 'login' ? (
@@ -132,7 +172,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
 
         <div className="auth-security-footer">
           <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-          <span>Restricted to IIUC students and faculty with valid institutional credentials.</span>
+          <span>
+            {role === 'admin'
+              ? 'Restricted to authorized IIUC departmental administrators.'
+              : 'Restricted to IIUC students and faculty with valid institutional credentials.'}
+          </span>
         </div>
 
       </div>

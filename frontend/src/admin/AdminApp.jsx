@@ -7,7 +7,9 @@ import {
   Library,
   Settings,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Globe,
+  ArrowLeft
 } from 'lucide-react';
 import AdminLogin from './AdminLogin';
 import Overview from './pages/Overview';
@@ -28,11 +30,12 @@ const NAV = [
 ];
 
 const pageFromHash = () => {
-  const key = window.location.hash.replace('#', '');
-  return NAV.some((n) => n.key === key) ? key : 'overview';
+  const hash = window.location.hash.replace('#', '');
+  const cleanKey = hash.replace(/^admin\/?/, '').replace(/^admin-/, '');
+  return NAV.some((n) => n.key === cleanKey) ? cleanKey : 'overview';
 };
 
-export default function AdminApp() {
+export default function AdminApp({ onExit }) {
   const [admin, setAdmin] = useState(() => getAdminSession());
   const [page, setPage] = useState(pageFromHash);
   const [toast, setToast] = useState('');
@@ -49,12 +52,20 @@ export default function AdminApp() {
     return () => clearTimeout(t);
   }, [toast]);
 
+  const handleExit = () => {
+    if (typeof onExit === 'function') {
+      onExit();
+    } else {
+      window.location.hash = '#home';
+    }
+  };
+
   if (!admin) {
-    return <AdminLogin onLogin={setAdmin} />;
+    return <AdminLogin onLogin={setAdmin} onExit={handleExit} />;
   }
 
   const go = (key) => {
-    window.location.hash = key;
+    window.location.hash = `admin-${key}`;
     setPage(key);
   };
 
@@ -74,10 +85,22 @@ export default function AdminApp() {
           </div>
           <div>
             <p className="adm-brand-title">ThesisVerse Admin</p>
-            <p className="adm-brand-sub">IIUC control panel</p>
+            <p className="adm-brand-sub">IIUC Control Panel</p>
           </div>
-          <div className="md:hidden ml-auto">
-            <button type="button" className="adm-btn adm-btn-secondary adm-btn-sm" onClick={logout}>
+          <div className="md:hidden ml-auto flex items-center gap-1.5">
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary adm-btn-sm"
+              onClick={handleExit}
+              title="Return to public website"
+            >
+              <Globe className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary adm-btn-sm"
+              onClick={logout}
+            >
               Logout
             </button>
           </div>
@@ -95,6 +118,18 @@ export default function AdminApp() {
               <span>{label}</span>
             </button>
           ))}
+
+          {/* Quick link back to website */}
+          <div className="pt-3 mt-3 border-t border-white/10 hidden md:block">
+            <button
+              type="button"
+              className="adm-nav-btn text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40"
+              onClick={handleExit}
+            >
+              <Globe className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>View Main Website</span>
+            </button>
+          </div>
         </nav>
 
         <div className="adm-sidebar-footer">
@@ -102,10 +137,25 @@ export default function AdminApp() {
             <p className="adm-user-name">{admin.name}</p>
             <p className="adm-user-email">{admin.email}</p>
           </div>
-          <button type="button" className="adm-btn adm-btn-secondary adm-btn-sm" onClick={logout}>
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Logout</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary adm-btn-sm flex-1"
+              onClick={handleExit}
+              title="Return to website"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Website</span>
+            </button>
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary adm-btn-sm"
+              onClick={logout}
+              title="Logout"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </aside>
 

@@ -77,9 +77,14 @@
   @apply px-4 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs sm:text-sm font-medium transition-all duration-150 shadow-sm cursor-pointer whitespace-nowrap;
 }
 
+/* Admin badge chip */
+.admin-nav-chip {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs;
+}
+
 /* Logged-in user chip & logout */
 .navbar-user-chip {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-2 cursor-pointer bg-transparent border-0 p-0;
 }
 
 .navbar-user-avatar {
@@ -94,12 +99,7 @@
   @apply p-2 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors border-0 bg-transparent cursor-pointer;
 }
 
-
 /* Notification count badge + clickable profile chip + settings button */
 .notification-badge {
   @apply absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white;
-}
-
-button.navbar-user-chip {
-  @apply bg-transparent border-0 cursor-pointer rounded-full pr-2 hover:bg-slate-100 transition-colors;
 }

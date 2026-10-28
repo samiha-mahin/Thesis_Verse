@@ -21,7 +21,7 @@ import '../styles/pages/Home.css';
 
 const SAVED_KEY = 'iiuc_thesis_saved';
 
-export default function Home() {
+export default function Home({ onNavigateToAdmin }) {
   let authContext = {};
   let chatContext = {};
 
@@ -127,7 +127,11 @@ export default function Home() {
   return (
     <div className="home-page-root">
       
-      <Navbar onOpenAuthModal={handleOpenAuth} onOpenSettings={() => setIsSettingsOpen(true)} />
+      <Navbar
+        onOpenAuthModal={handleOpenAuth}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onNavigateToAdmin={onNavigateToAdmin}
+      />
 
       <Hero
         onSearch={handleHeroSearch}
@@ -182,7 +186,11 @@ export default function Home() {
 
       <AboutAndContactSection />
 
-      <Footer onOpenAuthModal={handleOpenAuth} isLoggedIn={isLoggedIn} />
+      <Footer
+        onOpenAuthModal={handleOpenAuth}
+        isLoggedIn={isLoggedIn}
+        onNavigateToAdmin={onNavigateToAdmin}
+      />
 
       <FloatingChatbotButton
         onOpenAuthModal={handleOpenAuth}

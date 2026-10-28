@@ -445,7 +445,12 @@ export function resetToDefaults(kind) {
  * Dashboard numbers
  * ==================================================================== */
 
+let cachedBackendStats = null;
+
 export function getStats() {
+  if (cachedBackendStats) {
+    return cachedBackendStats;
+  }
   const users = getUsers();
   const requests = getRequests();
   return {
@@ -477,6 +482,12 @@ export async function syncAdminData() {
       api.getContent('journals')
     ]);
 
+    if (statsRes.ok && statsRes.stats) {
+      cachedBackendStats = statsRes.stats;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(DB_EVENT));
+      }
+    }
     if (usersRes.ok && Array.isArray(usersRes.users)) {
       saveUsers(usersRes.users);
     }

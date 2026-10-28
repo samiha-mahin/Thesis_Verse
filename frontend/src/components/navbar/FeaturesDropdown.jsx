@@ -1,8 +1,8 @@
 import React from 'react';
-import { Users, BookOpen, Layers, Download, Bot, Lock } from 'lucide-react';
+import { Users, BookOpen, Layers, Download, Bot, Lock, ShieldCheck } from 'lucide-react';
 import '../../styles/navbar/FeaturesDropdown.css';
 
-export default function FeaturesDropdown({ onSelectFeature, isLoggedIn }) {
+export default function FeaturesDropdown({ onSelectFeature, onNavigateToAdmin, isLoggedIn }) {
   const features = [
     {
       id: 'supervisors',
@@ -38,8 +38,27 @@ export default function FeaturesDropdown({ onSelectFeature, isLoggedIn }) {
       desc: 'Smart mentor and literature recommendations',
       icon: Bot,
       href: '#ai-assistant'
+    },
+    {
+      id: 'admin',
+      title: 'Admin Control Panel',
+      desc: 'Manage faculty, students, guidelines & templates',
+      icon: ShieldCheck,
+      href: '#admin',
+      isAdmin: true
     }
   ];
+
+  const handleItemClick = (e, item) => {
+    if (item.isAdmin && typeof onNavigateToAdmin === 'function') {
+      e.preventDefault();
+      onNavigateToAdmin();
+      return;
+    }
+    if (typeof onSelectFeature === 'function') {
+      onSelectFeature(e);
+    }
+  };
 
   // Logged-in view: simple numbered list, no lock badge
   if (isLoggedIn) {
@@ -50,11 +69,15 @@ export default function FeaturesDropdown({ onSelectFeature, isLoggedIn }) {
             <a
               key={item.id}
               href={item.href}
-              className="dropdown-item-card dropdown-item-numbered"
-              onClick={onSelectFeature}
+              className={`dropdown-item-card dropdown-item-numbered ${item.isAdmin ? 'border-t border-slate-200 mt-1 pt-2' : ''}`}
+              onClick={(e) => handleItemClick(e, item)}
             >
-              <span className="dropdown-item-number">{index + 1}</span>
-              <span className="dropdown-item-title">{item.title}</span>
+              <span className={`dropdown-item-number ${item.isAdmin ? 'bg-emerald-100 text-emerald-800' : ''}`}>
+                {item.isAdmin ? '★' : index + 1}
+              </span>
+              <span className={`dropdown-item-title ${item.isAdmin ? 'text-emerald-700 font-semibold' : ''}`}>
+                {item.title}
+              </span>
             </a>
           ))}
         </div>
@@ -79,15 +102,17 @@ export default function FeaturesDropdown({ onSelectFeature, isLoggedIn }) {
             <a
               key={item.id}
               href={item.href}
-              className="dropdown-item-card"
-              onClick={onSelectFeature}
+              className={`dropdown-item-card ${item.isAdmin ? 'border-t border-slate-200 mt-1 pt-2' : ''}`}
+              onClick={(e) => handleItemClick(e, item)}
             >
-              <div className="dropdown-item-icon-box">
+              <div className={`dropdown-item-icon-box ${item.isAdmin ? 'bg-emerald-50 text-emerald-700' : ''}`}>
                 <IconComponent className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="dropdown-item-info">
                 <div className="dropdown-item-title-row">
-                  <span className="dropdown-item-title">{item.title}</span>
+                  <span className={`dropdown-item-title ${item.isAdmin ? 'text-emerald-700 font-bold' : ''}`}>
+                    {item.title}
+                  </span>
                 </div>
                 <p className="dropdown-item-desc">{item.desc}</p>
               </div>

@@ -130,6 +130,7 @@ export const api = {
   deleteItem: (kind, id) => request(`/content/${kind}/${id}`, { method: 'DELETE', isAdmin: true }),
 
   // Chat
+  getChatStatus: () => request('/chat/status', { method: 'GET' }),
   sendChatMessage: (text) => request('/chat', { method: 'POST', body: JSON.stringify({ text }) }),
 
   // Bookmarks
